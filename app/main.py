@@ -14,8 +14,9 @@ from datetime import datetime, timezone
 import cv2
 import httpx
 import numpy as np
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from pymongo.errors import PyMongoError
 
 from app.detectors.objects import detect_objects
 from app.detectors.pose import detect_pose_signals
@@ -90,7 +91,14 @@ def health():
 
 @app.get("/alerts")
 def alerts(limit: int = 100):
-    return get_recent_alerts(limit)
+    try:
+        return get_recent_alerts(limit)
+    except PyMongoError as error:
+        print(f"[error] unable to fetch alerts from MongoDB: {error.__class__.__name__}")
+        raise HTTPException(
+            status_code=503,
+            detail="Alert storage is unavailable. Check the MongoDB connection settings.",
+        ) from error
 
 
 @app.websocket("/ws/monitor")
