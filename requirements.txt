@@ -2,7 +2,7 @@ fastapi==0.141.1
 uvicorn[standard]==0.52.1
 opencv-python-headless==4.13.0.92
 ultralytics==8.4.116
-mediapipe==0.10.14
+mediapipe==0.10.35
 pymongo==4.17.0
 cloudinary==1.45.0
 python-dotenv==1.2.2

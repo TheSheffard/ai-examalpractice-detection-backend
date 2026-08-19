@@ -149,3 +149,31 @@ pose/gaze on each crop separately. This is flagged here rather than silently
 built in because it adds real complexity (per-person tracking across frames)
 — worth doing once the single-person pipeline is proven working end-to-end,
 not before.
+
+## Docker / Render
+
+Quick steps to build and run locally with Docker:
+
+```bash
+docker build -t exam-monitor-backend:latest .
+docker run --rm -p 8000:8000 \
+  -e MONGODB_URI='your-mongo-uri' \
+  -e CLOUDINARY_CLOUD_NAME='...' \
+  -e CLOUDINARY_API_KEY='...' \
+  -e CLOUDINARY_API_SECRET='...' \
+  -e PORT=8000 \
+  exam-monitor-backend:latest
+```
+
+Deploying to Render:
+
+- Create a GitHub repo containing this project and connect it to Render.
+- Render will detect the `Dockerfile` and build using it; set environment
+  variables in the Render dashboard (same names as in `.env`).
+- Ensure the start command is `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
+
+If you prefer Render's managed Python build instead of Docker, set the
+build command to `pip install -r requirements.txt` and the start command
+to the `uvicorn` line above; however the Dockerfile approach ensures
+system dependencies for OpenCV are present and is recommended.
+
