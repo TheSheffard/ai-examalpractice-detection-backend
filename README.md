@@ -105,6 +105,12 @@ terminal's logs.
    `wss://your-service-name.onrender.com/ws/monitor` — put that in the
    frontend's `NEXT_PUBLIC_WS_URL` for production
 
+The backend automatically starts a keep-alive task on Render. It uses
+Render's `RENDER_EXTERNAL_URL` environment variable and requests `/health`
+every 15 seconds. To override the URL, set `KEEP_ALIVE_URL` in Render's
+Environment tab. The task is disabled locally unless one of these variables
+is set.
+
 **Note**: Render's free tier spins down after inactivity and takes ~30-60
 seconds to wake back up on the next request. Fine for development/demo;
 worth knowing before your defense so you hit the URL a minute early to wake it up.

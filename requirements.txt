@@ -7,4 +7,5 @@ pymongo==4.17.0
 cloudinary==1.45.0
 python-dotenv==1.2.2
 websockets==17.0.1
+httpx==0.28.1
 numpy==2.4.4

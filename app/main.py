@@ -6,10 +6,13 @@ Entry point. Exposes:
   - GET /health          — simple check for Render / uptime monitoring
 """
 import base64
+import asyncio
 import time
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
 import cv2
+import httpx
 import numpy as np
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,8 +23,42 @@ from app.detectors.gaze import detect_gaze_signal
 from app.fusion import process_frame
 from app.storage.cloudinary_client import upload_snapshot
 from app.storage.mongo_client import insert_alert, get_recent_alerts
+from app.config import settings
 
-app = FastAPI(title="Exam Monitor Backend")
+
+async def _keep_alive() -> None:
+    """Ping the deployed service often enough to prevent Render idling it."""
+    url = settings.KEEP_ALIVE_URL.rstrip("/") + "/health"
+    timeout = httpx.Timeout(10.0)
+
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        while True:
+            await asyncio.sleep(settings.KEEP_ALIVE_INTERVAL_SECONDS)
+            try:
+                response = await client.get(url)
+                response.raise_for_status()
+            except asyncio.CancelledError:
+                raise
+            except httpx.HTTPError as error:
+                print(f"[warn] keep-alive ping failed: {error}")
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    keep_alive_task = None
+    if settings.KEEP_ALIVE_URL:
+        keep_alive_task = asyncio.create_task(_keep_alive())
+        print(f"[info] keep-alive enabled: every {settings.KEEP_ALIVE_INTERVAL_SECONDS:g}s")
+
+    try:
+        yield
+    finally:
+        if keep_alive_task:
+            keep_alive_task.cancel()
+            await asyncio.gather(keep_alive_task, return_exceptions=True)
+
+
+app = FastAPI(title="Exam Monitor Backend", lifespan=lifespan)
 
 # Loosen this to your actual Vercel domain once deployed, e.g.
 # allow_origins=["https://your-frontend.vercel.app"]

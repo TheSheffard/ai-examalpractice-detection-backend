@@ -28,5 +28,9 @@ class Settings:
     # --- Frame handling ---
     FRAME_CHECK_INTERVAL_SECONDS: float = float(os.getenv("FRAME_CHECK_INTERVAL_SECONDS", "1.0"))
 
+    # --- Render keep-alive ---
+    KEEP_ALIVE_URL: str = os.getenv("KEEP_ALIVE_URL", os.getenv("RENDER_EXTERNAL_URL", ""))
+    KEEP_ALIVE_INTERVAL_SECONDS: float = float(os.getenv("KEEP_ALIVE_INTERVAL_SECONDS", "15"))
+
 
 settings = Settings()
