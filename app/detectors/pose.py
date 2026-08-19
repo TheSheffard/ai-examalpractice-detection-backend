@@ -12,6 +12,7 @@ sees in a single frame.
 """
 import mediapipe as mp
 
+# Access Pose solution directly from mp.solutions
 _mp_pose = mp.solutions.pose
 _pose = _mp_pose.Pose(
     static_image_mode=False,
@@ -29,9 +30,7 @@ def detect_pose_signals(frame):
     """
     Runs MediaPipe Pose on a single BGR frame.
     Returns a list of dicts: label, confidence, bbox (normalized 0-1), flagged (bool)
-    One entry per detected person (MediaPipe Pose's default model tracks one
-    person at a time — see the README note on extending this to multiple
-    people in a wide classroom shot).
+    One entry per detected person.
     """
     rgb = frame[:, :, ::-1]
     result = _pose.process(rgb)
@@ -62,7 +61,7 @@ def detect_pose_signals(frame):
     if hand_dropped:
         return [{
             "label": "Hand below desk level",
-            "confidence": 0.7,  # rule-based, not a model confidence score — see README
+            "confidence": 0.7,
             "flagged": True,
             "bbox": bbox,
         }]
