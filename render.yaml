@@ -1,7 +1,0 @@
-services:
-  - type: web
-    name: exam-monitor-backend
-    env: docker
-    dockerfilePath: Dockerfile
-    branch: main
-    plan: free
